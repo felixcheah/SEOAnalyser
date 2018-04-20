@@ -76,14 +76,14 @@ namespace SEOAnalyser.Controllers
             {
                 // Create the query.  Use ToLowerInvariant to match "data" and "Data"   
                 var matchQuery = from word in source
-                    where word.ToLowerInvariant() == keyword.ToLowerInvariant()
+                    where word.ToLowerInvariant() == keyword.Trim().ToLowerInvariant()
                     select word;
 
                 // Count the matches, which executes the query.  
                 var wordCount = matchQuery.Count();
                 seoResult.Add(new SeoResult
                                 {
-                                    Keyword = keyword,
+                                    Keyword = keyword.Trim(),
                                     Occurance = wordCount
                                 });
             }
