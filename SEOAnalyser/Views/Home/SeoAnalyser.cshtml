@@ -24,8 +24,7 @@
 
 <div id="viewContent">
     <h2 class="text-center">Seo Analyser</h2>
-    <div id="message"></div>
-    
+       
     <div class="form-horizontal">
         <div class="form-group">
             <label class="control-label col-md-1">URL</label>
@@ -37,9 +36,17 @@
             <label class="control-label col-md-1">Keywords</label>
             <div class="input-group col-md-11">
                 <input id="inputKeyword" type="text" placeholder="Enter Keywords (e.g. and;or;the)" class="form-control" />
+                <label>(E.g. the;and;to without space)</label> <br/>
+                <input type="checkbox"
+                       name="disableAnalyse"
+                       id="disableAnalyse"
+                       value="Disable Analyse"
+                       class="text-center"/>
+                <label style="font-weight: normal;" for="disableAnalyse">Disable SEO Analyse</label>
             </div>
         </div>
     </div>
+    <div id="message" style="color: red; text-align: center; "></div>
     <div class="form-group text-center">
         <div class="col-md-1"></div>
         <button id="submit" class="btn btn-primary">Submit</button>
@@ -47,7 +54,7 @@
     </div>
     
     <div class="tab-content">
-        <div class="tab-pane fade in active table-responsive" id="tabTransaction">
+        <div class="tab-pane fade in active table-responsive" id="tabResult">
             <table id="datatableResult" class="table table-striped table-bordered" cellspacing="0" width="100%"></table>
         </div>
     </div>
@@ -64,9 +71,14 @@
         $("#reset").click(function (e) {
             $("#inputUrl").val("");
             $("#inputKeyword").val("");
+            $("#message").html("");
+            $("img").hide();
+            ClearResult();
         });
 
         $("#submit").click(function (e) {
+            ClearResult();
+
             var validate = Validate();
             $("#message").html(validate);
 
@@ -77,16 +89,18 @@
                 $.ajax({
                     type: "POST",
                     url: "/Home/GetUrlSource",
-                    data: { url: urlStr, keywordList: keywordList },
+                    data: { url: urlStr, keywordList: keywordList, disableAnalyse: $('#disableAnalyse').prop('checked') },
                     dataType: "html",
                     success: function (result, status, xhr) {
-                        $('#datatableResult').dataTable().fnClearTable();
+                        ClearResult();
 
                         var resultObj = JSON.parse(result);
-                        if (resultObj.data) {
-                            resultObj.data.forEach(function(item){
+                        if (resultObj.data.length > 0) {
+                            resultObj.data.forEach(function (item) {
                                 $('#datatableResult').dataTable().fnAddData(item);
-                            });                            
+                            });
+                        } else if (resultObj.errorMessage) {
+                            $("#message").html(resultObj.errorMessage);
                         }
                     },
                     error: function (xhr, status, error) {
@@ -121,6 +135,10 @@
             var urlregex = new RegExp(
           "^(http[s]?:\\/\\/(www\\.)?|ftp:\\/\\/(www\\.)?|www\\.){1}([0-9A-Za-z-\\.@@:%_\+~#=]+)+((\\.[a-zA-Z]{2,3})+)(/(.)*)?(\\?(.)*)?");
             return urlregex.test(url);
+        }
+
+        function ClearResult() {
+            $('#datatableResult').dataTable().fnClearTable();
         }
     });
 
