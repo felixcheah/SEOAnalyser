@@ -47,8 +47,10 @@ namespace SEOAnalyser.Controllers
         }
 
         [HttpPost]
-        public JsonResult GetUrlSource(string url, List<string> keywordList)
+        public JsonResult GetUrlSource(string url, List<string> keywordList, bool disableAnalyse)
         {
+            if (disableAnalyse) return Json(new {data = new SeoResult()});
+
             url = url.Substring(0, 4) != "http" ? "http://" + url : url;
             using (var client = new WebClient())
             {
@@ -62,7 +64,8 @@ namespace SEOAnalyser.Controllers
                 catch (Exception ex)
                 {
                     // ignored
-                    return Json(new SeoResult());
+                    //return Json(new SeoResult(), errorMsg);
+                    return new JsonResult( new { code = "URL not respond", errorMessage = ex.Message } );
                 }
             }
         }
